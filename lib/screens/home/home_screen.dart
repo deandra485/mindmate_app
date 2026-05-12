@@ -1,0 +1,883 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:application_belajar/config/theme.dart';
+import 'package:application_belajar/providers/app_provider.dart';
+import 'package:application_belajar/widgets/puzzle_widget.dart';
+import 'package:application_belajar/widgets/reward_dialog.dart';
+import 'package:application_belajar/models/task_model.dart';
+
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Consumer<AppProvider>(
+        builder: (context, appProvider, _) {
+          final completedPieces = appProvider.dailyPuzzleTasks
+              .where((t) => t.isCompleted)
+              .length;
+          final totalPieces = 6;
+
+          return SafeArea(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ═══════════════════════════════════════════
+                  // GREETING HEADER
+                  // ═══════════════════════════════════════════
+                  _GreetingHeader(name: appProvider.user.name),
+
+                  const SizedBox(height: 16),
+
+                  // ═══════════════════════════════════════════
+                  // STATS ROW (Coins & Streak)
+                  // ═══════════════════════════════════════════
+                  _StatsRow(
+                    coins: appProvider.user.coins,
+                    streak: appProvider.user.streak,
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // ═══════════════════════════════════════════
+                  // PUZZLE PROGRESS SECTION
+                  // ═══════════════════════════════════════════
+                  _PuzzleSection(
+                    completedPieces: completedPieces,
+                    totalPieces: totalPieces,
+                  ),
+
+                  const SizedBox(height: 28),
+
+                  // ═══════════════════════════════════════════
+                  // TO DO LIST TODAY
+                  // ═══════════════════════════════════════════
+                  const Text(
+                    'To Do List Today',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1F2937),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  if (appProvider.dailyPuzzleTasks.isEmpty)
+                    _buildEmptyState(context)
+                  else
+                    _buildTaskList(context, appProvider),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF9FAFB),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFF3F4F6)),
+      ),
+      child: Column(
+        children: [
+          Text(
+            'Start building your progress',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: AppColors.primary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Add a task to unlock\nyour first puzzle piece',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w400,
+              color: Color(0xFF9CA3AF),
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            height: 46,
+            child: ElevatedButton.icon(
+              onPressed: () => _showAddTaskSheet(context),
+              icon: const Icon(Icons.add_rounded, size: 20),
+              label: const Text(
+                'Add New Task',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Shows the "Add New Task" or "Edit Task" bottom sheet overlay on top of the homepage.
+  void _showAddTaskSheet(BuildContext context, {Task? taskToEdit}) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return AddTaskBottomSheet(taskToEdit: taskToEdit);
+      },
+    );
+  }
+
+  Widget _buildTaskList(BuildContext context, AppProvider appProvider) {
+    return Column(
+      children: appProvider.dailyPuzzleTasks.map((task) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: _TaskItem(
+            title: task.title,
+            subtitle: task.description ?? '',
+            isCompleted: task.isCompleted,
+            onComplete: () {
+              appProvider.completeTask(task.id);
+              showRewardDialog(context, coins: 10, showPuzzleReward: true);
+            },
+            onEdit: () => _showAddTaskSheet(context, taskToEdit: task),
+            onDelete: () {
+              appProvider.deleteTask(task.id);
+            },
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GREETING HEADER
+// ═══════════════════════════════════════════════════════════════════════════
+
+class _GreetingHeader extends StatelessWidget {
+  final String name;
+
+  const _GreetingHeader({required this.name});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Hi, $name',
+              style: const TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1F2937),
+              ),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Good Morning ⭐',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: Color(0xFF6B7280),
+              ),
+            ),
+          ],
+        ),
+        // Menu icon (list) → navigates to Note screen
+        GestureDetector(
+          onTap: () => Navigator.of(context).pushNamed('/note'),
+          child: Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: const Color(0xFF1F2937),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(
+              Icons.format_list_bulleted_rounded,
+              color: Colors.white,
+              size: 22,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// STATS ROW (Total Coin & Current Streak)
+// ═══════════════════════════════════════════════════════════════════════════
+
+class _StatsRow extends StatelessWidget {
+  final int coins;
+  final int streak;
+
+  const _StatsRow({required this.coins, required this.streak});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        // Total Coin
+        Expanded(
+          child: _StatChip(
+            icon: Icons.circle,
+            iconColor: const Color(0xFFFBBF24),
+            label: 'Total Coin',
+            value: '$coins Coin',
+            valueColor: const Color(0xFF10B981),
+          ),
+        ),
+        const SizedBox(width: 12),
+        // Current Streak
+        Expanded(
+          child: _StatChip(
+            icon: Icons.local_fire_department_rounded,
+            iconColor: const Color(0xFFEF4444),
+            label: 'Current Streak',
+            value: '$streak Day',
+            valueColor: const Color(0xFF10B981),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StatChip extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+  final String value;
+  final Color valueColor;
+
+  const _StatChip({
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    required this.value,
+    required this.valueColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: iconColor, size: 20),
+          const SizedBox(width: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w400,
+                  color: Color(0xFF9CA3AF),
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: valueColor,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PUZZLE PROGRESS SECTION
+// ═══════════════════════════════════════════════════════════════════════════
+
+class _PuzzleSection extends StatelessWidget {
+  final int completedPieces;
+  final int totalPieces;
+
+  const _PuzzleSection({
+    required this.completedPieces,
+    required this.totalPieces,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header
+        Row(
+          children: [
+            Icon(Icons.extension_rounded, color: AppColors.primary, size: 22),
+            const SizedBox(width: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Puzzle Progress',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1F2937),
+                  ),
+                ),
+                Text(
+                  'Complete tasks and get puzzle pieces!',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.primary.withValues(alpha: 0.7),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 14),
+
+        // Puzzle grid
+        PuzzleWidget(
+          completedPieces: completedPieces,
+          totalPieces: totalPieces,
+        ),
+
+        const SizedBox(height: 12),
+
+        // "0/6 pieces" text
+        RichText(
+          text: TextSpan(
+            children: [
+              TextSpan(
+                text: '$completedPieces/$totalPieces',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.primary,
+                ),
+              ),
+              const TextSpan(
+                text: ' pieces',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                  color: Color(0xFF9CA3AF),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 6),
+
+        // Thin progress line with small purple square indicator
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final double percentage = totalPieces > 0
+                ? (completedPieces / totalPieces).clamp(0.0, 1.0)
+                : 0.0;
+            return SizedBox(
+              height: 6,
+              child: Stack(
+                children: [
+                  // Background line
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    top: 2.5,
+                    child: Container(height: 1, color: const Color(0xFFE5E7EB)),
+                  ),
+                  // Purple progress line
+                  Positioned(
+                    left: 0,
+                    top: 2.5,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      height: 1,
+                      width: constraints.maxWidth * percentage,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  // Purple square indicator
+                  AnimatedPositioned(
+                    duration: const Duration(milliseconds: 300),
+                    left: percentage == 0
+                        ? 0
+                        : (constraints.maxWidth - 8) * percentage,
+                    top: 0,
+                    child: Container(
+                      width: 8,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TASK ITEM CARD
+// ═══════════════════════════════════════════════════════════════════════════
+
+class _TaskItem extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final bool isCompleted;
+  final VoidCallback onComplete;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  const _TaskItem({
+    required this.title,
+    required this.subtitle,
+    required this.isCompleted,
+    required this.onComplete,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: isCompleted ? const Color(0xFFEBE5FB) : Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isCompleted
+              ? const Color(0xFFEBE5FB)
+              : const Color(0xFFE5E7EB),
+        ),
+      ),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: isCompleted ? null : onComplete,
+            child: Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(6),
+                color: isCompleted
+                    ? const Color(0xFF7C3AED)
+                    : Colors.transparent,
+                border: Border.all(
+                  color: isCompleted
+                      ? const Color(0xFF7C3AED)
+                      : const Color(0xFFD1D5DB),
+                  width: 2,
+                ),
+              ),
+              // No child icon needed, just a solid rounded square
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1F2937),
+                  ),
+                ),
+                if (subtitle.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isCompleted
+                          ? const Color(0xFF7C3AED)
+                          : const Color(0xFF9CA3AF),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          PopupMenuButton<String>(
+            icon: const Icon(
+              Icons.more_horiz,
+              color: Color(0xFF9CA3AF),
+              size: 20,
+            ),
+            color: Colors.white,
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            position: PopupMenuPosition.under,
+            onSelected: (value) {
+              if (value == 'edit') {
+                onEdit();
+              } else if (value == 'delete') {
+                onDelete();
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'edit',
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.edit_outlined,
+                      color: Color(0xFF1F2937),
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    const Text(
+                      'Edit',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF1F2937),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'delete',
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.delete_outline_rounded,
+                      color: Color(0xFFEF4444),
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    const Text(
+                      'Delete',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFFEF4444),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ADD NEW TASK BOTTOM SHEET
+// ═══════════════════════════════════════════════════════════════════════════
+
+class AddTaskBottomSheet extends StatefulWidget {
+  final Task? taskToEdit;
+
+  const AddTaskBottomSheet({super.key, this.taskToEdit});
+
+  @override
+  State<AddTaskBottomSheet> createState() => _AddTaskBottomSheetState();
+}
+
+class _AddTaskBottomSheetState extends State<AddTaskBottomSheet> {
+  final _titleController = TextEditingController();
+  final _subtaskController = TextEditingController();
+  bool _isStep2 = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.taskToEdit != null) {
+      _titleController.text = widget.taskToEdit!.title;
+      _subtaskController.text = widget.taskToEdit!.description ?? '';
+    }
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _subtaskController.dispose();
+    super.dispose();
+  }
+
+  void _handleNext() {
+    if (_titleController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a task title')),
+      );
+      return;
+    }
+    setState(() => _isStep2 = true);
+  }
+
+  void _handleSave() {
+    final provider = context.read<AppProvider>();
+    if (widget.taskToEdit != null) {
+      provider.updateTask(
+        widget.taskToEdit!.id,
+        _titleController.text,
+        _subtaskController.text.isEmpty ? null : _subtaskController.text,
+      );
+    } else {
+      provider.addTask(
+        _titleController.text,
+        _subtaskController.text.isEmpty ? null : _subtaskController.text,
+        DateTime.now(),
+      );
+      // Also add to daily puzzle if under 6
+      final tasks = provider.tasks;
+      if (tasks.isNotEmpty) {
+        provider.addToDailyPuzzle(tasks.last);
+      }
+    }
+    Navigator.of(context).pop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+    return Container(
+      padding: EdgeInsets.only(bottom: bottomInset),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Handle bar ──
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE5E7EB),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // ── Header: back + title ──
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    if (_isStep2) {
+                      setState(() => _isStep2 = false);
+                    } else {
+                      Navigator.of(context).pop();
+                    }
+                  },
+                  child: const Icon(
+                    Icons.chevron_left_rounded,
+                    size: 28,
+                    color: Color(0xFF1F2937),
+                  ),
+                ),
+                Expanded(
+                  child: Center(
+                    child: Text(
+                      widget.taskToEdit != null ? 'Edit Task' : 'Add New Task',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF1F2937),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 28), // Balance the back arrow
+              ],
+            ),
+
+            const SizedBox(height: 24),
+
+            // ── Task Title ──
+            const Text(
+              'Task Title',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF1F2937),
+              ),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _titleController,
+              enabled: !_isStep2,
+              style: const TextStyle(fontSize: 15, color: Color(0xFF1F2937)),
+              decoration: InputDecoration(
+                hintText: 'Write your task title..',
+                hintStyle: const TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFFD1D5DB),
+                ),
+                filled: true,
+                fillColor: _isStep2 ? const Color(0xFFF9FAFB) : Colors.white,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 16,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                ),
+                disabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(
+                    color: Color(0xFF7C3AED),
+                    width: 2,
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // ── Sub Task Name ──
+            const Text(
+              'Sub Task Name',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF1F2937),
+              ),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _subtaskController,
+              enabled: !_isStep2,
+              style: const TextStyle(fontSize: 15, color: Color(0xFF1F2937)),
+              decoration: InputDecoration(
+                hintText: 'Write your sub task name..',
+                hintStyle: const TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFFD1D5DB),
+                ),
+                filled: true,
+                fillColor: _isStep2 ? const Color(0xFFF9FAFB) : Colors.white,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 16,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                ),
+                disabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(
+                    color: Color(0xFF7C3AED),
+                    width: 2,
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // ── Next / Save button ──
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: _isStep2 ? _handleSave : _handleNext,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(26),
+                  ),
+                ),
+                child: Text(
+                  _isStep2 ? 'Save' : 'Next',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

@@ -1,0 +1,63 @@
+class User {
+  final String id;
+  final String name;
+  final String email;
+  final int coins;
+  final int streak;
+  final DateTime lastActiveDate;
+  final int totalTasksCompleted;
+
+  User({
+    required this.id,
+    required this.name,
+    required this.email,
+    this.coins = 0,
+    this.streak = 0,
+    required this.lastActiveDate,
+    this.totalTasksCompleted = 0,
+  });
+
+  User copyWith({
+    String? id,
+    String? name,
+    String? email,
+    int? coins,
+    int? streak,
+    DateTime? lastActiveDate,
+    int? totalTasksCompleted,
+  }) {
+    return User(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      coins: coins ?? this.coins,
+      streak: streak ?? this.streak,
+      lastActiveDate: lastActiveDate ?? this.lastActiveDate,
+      totalTasksCompleted: totalTasksCompleted ?? this.totalTasksCompleted,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'email': email,
+      'coins': coins,
+      'streak': streak,
+      'lastActiveDate': lastActiveDate.toIso8601String(),
+      'totalTasksCompleted': totalTasksCompleted,
+    };
+  }
+
+  factory User.fromMap(Map<String, dynamic> map) {
+    return User(
+      id: map['id'] ?? '',
+      name: map['name'] ?? '',
+      email: map['email'] ?? '',
+      coins: map['coins'] ?? 0,
+      streak: map['streak'] ?? 0,
+      lastActiveDate: DateTime.parse(map['lastActiveDate'] ?? DateTime.now().toIso8601String()),
+      totalTasksCompleted: map['totalTasksCompleted'] ?? 0,
+    );
+  }
+}
