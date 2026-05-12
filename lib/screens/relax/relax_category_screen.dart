@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:application_belajar/providers/app_provider.dart';
+import 'package:application_belajar/widgets/unlock_content_dialog.dart';
 
 class RelaxCategoryScreen extends StatelessWidget {
   final String categoryTitle;
@@ -438,7 +439,7 @@ class RelaxCategoryScreen extends StatelessWidget {
               // Buy Button
               GestureDetector(
                 onTap: () {
-                  // Buy logic
+                  UnlockContentDialog.show(context, item: item);
                 },
                 child: Container(
                   width: double.infinity,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:application_belajar/providers/app_provider.dart';
 import 'package:application_belajar/screens/relax/relax_category_screen.dart';
+import 'package:application_belajar/widgets/unlock_content_dialog.dart';
 
 class RelaxScreen extends StatefulWidget {
   const RelaxScreen({super.key});
@@ -416,7 +417,7 @@ class _RelaxScreenState extends State<RelaxScreen> {
           // Buy Button
           GestureDetector(
             onTap: () {
-              // Action logic goes here
+              UnlockContentDialog.show(context, item: pick);
             },
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),

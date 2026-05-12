@@ -45,5 +45,33 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <category android:name="android.intent.category.BROWSABLE"/>
+            <data android:scheme="https"/>
+        </intent>
+        <intent><action android:name="android.intent.action.VIEW"/><data android:scheme="spotify"/></intent>
+        <intent><action android:name="android.intent.action.VIEW"/><data android:scheme="joox"/></intent>
+        <intent><action android:name="android.intent.action.VIEW"/><data android:scheme="youtubemusic"/></intent>
+        <intent><action android:name="android.intent.action.VIEW"/><data android:scheme="music"/></intent>
+        <intent><action android:name="android.intent.action.VIEW"/><data android:scheme="nflx"/></intent>
+        <intent><action android:name="android.intent.action.VIEW"/><data android:scheme="disneyplus"/></intent>
+        <intent><action android:name="android.intent.action.VIEW"/><data android:scheme="iqiyi"/></intent>
+        <intent><action android:name="android.intent.action.VIEW"/><data android:scheme="youtube"/></intent>
+        <intent><action android:name="android.intent.action.VIEW"/><data android:scheme="primevideo"/></intent>
+        <intent><action android:name="android.intent.action.VIEW"/><data android:scheme="viu"/></intent>
+        <intent><action android:name="android.intent.action.VIEW"/><data android:scheme="wetv"/></intent>
+        <intent><action android:name="android.intent.action.VIEW"/><data android:scheme="vidio"/></intent>
+        <intent><action android:name="android.intent.action.VIEW"/><data android:scheme="snssdk1233"/></intent>
+        <intent><action android:name="android.intent.action.VIEW"/><data android:scheme="instagram"/></intent>
+        <intent><action android:name="android.intent.action.VIEW"/><data android:scheme="snapchat"/></intent>
+        <intent><action android:name="android.intent.action.VIEW"/><data android:scheme="line"/></intent>
+        <intent><action android:name="android.intent.action.VIEW"/><data android:scheme="fb"/></intent>
+        <intent><action android:name="android.intent.action.VIEW"/><data android:scheme="twitter"/></intent>
+        <intent><action android:name="android.intent.action.VIEW"/><data android:scheme="minecraft"/></intent>
+        <intent><action android:name="android.intent.action.VIEW"/><data android:scheme="mobilelegends"/></intent>
+        <intent><action android:name="android.intent.action.VIEW"/><data android:scheme="roblox"/></intent>
+        <intent><action android:name="android.intent.action.VIEW"/><data android:scheme="yuanshen"/></intent>
+        <intent><action android:name="android.intent.action.VIEW"/><data android:scheme="market"/></intent>
     </queries>
 </manifest>

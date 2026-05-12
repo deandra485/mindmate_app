@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:get/get.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:application_belajar/config/theme.dart';
 import 'package:application_belajar/providers/app_provider.dart';
-import 'package:application_belajar/controllers/auth_controller.dart';
+import 'package:application_belajar/bloc/auth/auth_bloc.dart';
 import 'package:application_belajar/screens/onboarding/splash_screen.dart';
 import 'package:application_belajar/screens/onboarding/onboarding_screen.dart';
 import 'package:application_belajar/screens/auth/login_screen.dart';
@@ -25,10 +25,6 @@ import 'package:application_belajar/screens/settings/privacy_policy_screen.dart'
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
-
-  // Register GetX controllers
-  Get.put(AuthController());
-
   runApp(const MyApp());
 }
 
@@ -39,54 +35,33 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [ChangeNotifierProvider(create: (_) => AppProvider())],
-      child: GetMaterialApp(
-        title: 'Mindmate',
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
-        themeMode: ThemeMode.light,
-        home: const SplashScreen(),
-        debugShowCheckedModeBanner: false,
-        getPages: [
-          GetPage(name: '/onboarding', page: () => const OnboardingScreen()),
-          GetPage(name: '/login', page: () => const LoginScreen()),
-          GetPage(name: '/signup', page: () => const SignupScreen()),
-          GetPage(
-            name: '/forgot-password',
-            page: () => const ForgotPasswordScreen(),
-          ),
-          GetPage(
-            name: '/verification',
-            page: () => const VerificationScreen(),
-          ),
-          GetPage(
-            name: '/new-password',
-            page: () => const NewPasswordScreen(),
-          ),
-          GetPage(name: '/main', page: () => const MainScreen()),
-          GetPage(name: '/add-task', page: () => const AddTaskScreen()),
-          GetPage(name: '/note', page: () => const NoteScreen()),
-          GetPage(
-            name: '/edit-profile',
-            page: () => const EditProfileScreen(),
-          ),
-          GetPage(name: '/settings', page: () => const SettingsScreen()),
-          GetPage(
-            name: '/change-password',
-            page: () => const ChangePasswordScreen(),
-          ),
-          GetPage(
-            name: '/change-email',
-            page: () => const ChangeEmailScreen(),
-          ),
-          GetPage(
-            name: '/app-version',
-            page: () => const AppVersionScreen(),
-          ),
-          GetPage(
-            name: '/privacy-policy',
-            page: () => const PrivacyPolicyScreen(),
-          ),
-        ],
+      child: BlocProvider(
+        create: (_) => AuthBloc(),
+        child: MaterialApp(
+          title: 'Mindmate',
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: ThemeMode.light,
+          home: const SplashScreen(),
+          debugShowCheckedModeBanner: false,
+          routes: {
+            '/onboarding': (_) => const OnboardingScreen(),
+            '/login': (_) => const LoginScreen(),
+            '/signup': (_) => const SignupScreen(),
+            '/forgot-password': (_) => const ForgotPasswordScreen(),
+            '/verification': (_) => const VerificationScreen(),
+            '/new-password': (_) => const NewPasswordScreen(),
+            '/main': (_) => const MainScreen(),
+            '/add-task': (_) => const AddTaskScreen(),
+            '/note': (_) => const NoteScreen(),
+            '/edit-profile': (_) => const EditProfileScreen(),
+            '/settings': (_) => const SettingsScreen(),
+            '/change-password': (_) => const ChangePasswordScreen(),
+            '/change-email': (_) => const ChangeEmailScreen(),
+            '/app-version': (_) => const AppVersionScreen(),
+            '/privacy-policy': (_) => const PrivacyPolicyScreen(),
+          },
+        ),
       ),
     );
   }
