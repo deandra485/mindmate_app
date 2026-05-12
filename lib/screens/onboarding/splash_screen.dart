@@ -169,28 +169,31 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  void _startAnimation() async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    if (!mounted) return;
+  void _startAnimation() {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      // Wait a bit after the first frame is drawn to ensure native splash screen is gone
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (!mounted) return;
 
-    _mainController.forward();
+      _mainController.forward();
 
-    // Start bounce animation when mascot appears
-    _mainController.addListener(() {
-      if (_mainController.value >= 0.55 && !_bounceController.isAnimating) {
-        _bounceController.repeat(reverse: true);
-      }
-    });
+      // Start bounce animation when mascot appears
+      _mainController.addListener(() {
+        if (_mainController.value >= 0.55 && !_bounceController.isAnimating) {
+          _bounceController.repeat(reverse: true);
+        }
+      });
 
-    // Navigate after animation completes + a short pause
-    _mainController.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        Future.delayed(const Duration(milliseconds: 800), () {
-          if (mounted) {
-            Navigator.of(context).pushReplacementNamed('/onboarding');
-          }
-        });
-      }
+      // Navigate after animation completes + a short pause
+      _mainController.addStatusListener((status) {
+        if (status == AnimationStatus.completed) {
+          Future.delayed(const Duration(milliseconds: 800), () {
+            if (mounted) {
+              Navigator.of(context).pushReplacementNamed('/onboarding');
+            }
+          });
+        }
+      });
     });
   }
 

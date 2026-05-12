@@ -3,6 +3,8 @@ class User {
   final String name;
   final String email;
   final int coins;
+  final int earnedCoins;
+  final int spentCoins;
   final int streak;
   final DateTime lastActiveDate;
   final int totalTasksCompleted;
@@ -12,6 +14,8 @@ class User {
     required this.name,
     required this.email,
     this.coins = 0,
+    this.earnedCoins = 0,
+    this.spentCoins = 0,
     this.streak = 0,
     required this.lastActiveDate,
     this.totalTasksCompleted = 0,
@@ -22,6 +26,8 @@ class User {
     String? name,
     String? email,
     int? coins,
+    int? earnedCoins,
+    int? spentCoins,
     int? streak,
     DateTime? lastActiveDate,
     int? totalTasksCompleted,
@@ -31,6 +37,8 @@ class User {
       name: name ?? this.name,
       email: email ?? this.email,
       coins: coins ?? this.coins,
+      earnedCoins: earnedCoins ?? this.earnedCoins,
+      spentCoins: spentCoins ?? this.spentCoins,
       streak: streak ?? this.streak,
       lastActiveDate: lastActiveDate ?? this.lastActiveDate,
       totalTasksCompleted: totalTasksCompleted ?? this.totalTasksCompleted,
@@ -43,6 +51,8 @@ class User {
       'name': name,
       'email': email,
       'coins': coins,
+      'earnedCoins': earnedCoins,
+      'spentCoins': spentCoins,
       'streak': streak,
       'lastActiveDate': lastActiveDate.toIso8601String(),
       'totalTasksCompleted': totalTasksCompleted,
@@ -55,6 +65,8 @@ class User {
       name: map['name'] ?? '',
       email: map['email'] ?? '',
       coins: map['coins'] ?? 0,
+      earnedCoins: map['earnedCoins'] ?? 0,
+      spentCoins: map['spentCoins'] ?? 0,
       streak: map['streak'] ?? 0,
       lastActiveDate: DateTime.parse(map['lastActiveDate'] ?? DateTime.now().toIso8601String()),
       totalTasksCompleted: map['totalTasksCompleted'] ?? 0,

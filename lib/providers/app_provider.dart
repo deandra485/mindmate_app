@@ -85,8 +85,11 @@ class AppProvider extends ChangeNotifier {
       final completedTask = _dailyPuzzleTasks[taskIndex];
       _dailyPuzzleTasks[taskIndex] = completedTask.copyWith(isCompleted: true);
       
-      // Add coins
-      _user = _user.copyWith(coins: _user.coins + completedTask.coinReward);
+      // Add coins and update earned
+      _user = _user.copyWith(
+        coins: _user.coins + completedTask.coinReward,
+        earnedCoins: _user.earnedCoins + completedTask.coinReward,
+      );
       _completedTasksToday++;
 
       // Check if all tasks completed
@@ -94,6 +97,7 @@ class AppProvider extends ChangeNotifier {
         _user = _user.copyWith(
           streak: _user.streak + 1,
           coins: _user.coins + 50, // Bonus coins
+          earnedCoins: _user.earnedCoins + 50,
           totalTasksCompleted: _user.totalTasksCompleted + _dailyPuzzleTasks.length,
         );
       }
@@ -110,13 +114,19 @@ class AppProvider extends ChangeNotifier {
 
   void spendCoins(int amount) {
     if (_user.coins >= amount) {
-      _user = _user.copyWith(coins: _user.coins - amount);
+      _user = _user.copyWith(
+        coins: _user.coins - amount,
+        spentCoins: _user.spentCoins + amount,
+      );
       notifyListeners();
     }
   }
 
   void addCoins(int amount) {
-    _user = _user.copyWith(coins: _user.coins + amount);
+    _user = _user.copyWith(
+      coins: _user.coins + amount,
+      earnedCoins: _user.earnedCoins + amount,
+    );
     notifyListeners();
   }
 

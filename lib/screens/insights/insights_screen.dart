@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:application_belajar/config/theme.dart';
+import 'package:provider/provider.dart';
+import 'package:application_belajar/providers/app_provider.dart';
 
-/// History Statistic / Insights screen matching the MindMate design.
-///
-/// Sections:
-/// 1. Title: "History Statistic"
-/// 2. Mood History: 7-day row with kawaii emoji faces
-/// 3. Bar Chart: Puzzle Completed (purple) + Coin (yellow) per day
 class InsightsScreen extends StatelessWidget {
   const InsightsScreen({super.key});
 
@@ -29,7 +24,7 @@ class InsightsScreen extends StatelessWidget {
                   'History Statistic',
                   style: TextStyle(
                     fontSize: 22,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w800,
                     color: Color(0xFF1F2937),
                   ),
                 ),
@@ -38,130 +33,137 @@ class InsightsScreen extends StatelessWidget {
               const SizedBox(height: 28),
 
               // ═══════════════════════════════════════
-              // MOOD HISTORY
+              // MOOD HISTORY CARD
               // ═══════════════════════════════════════
-              const _MoodHistorySection(),
+              _buildCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Mood History',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF1F2937),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: const [
+                        _MoodPill(day: 'M', isYellow: false, mood: '😊'),
+                        _MoodPill(day: 'T', isYellow: true, mood: '😊'),
+                        _MoodPill(day: 'W', isYellow: false, mood: '😐'),
+                        _MoodPill(day: 'T', isYellow: false, mood: '😊'),
+                        _MoodPill(day: 'F', isYellow: true, mood: '😔'),
+                        _MoodPill(day: 'S', isYellow: true, mood: '😊'),
+                        _MoodPill(day: 'S', isYellow: false, mood: '😊'),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
 
-              const SizedBox(height: 28),
+              const SizedBox(height: 20),
 
               // ═══════════════════════════════════════
-              // BAR CHART SECTION
+              // BAR CHART CARD
               // ═══════════════════════════════════════
-              const _BarChartSection(),
+              _buildCard(child: const _BarChartSection()),
+
+              const SizedBox(height: 20),
+
+              // ═══════════════════════════════════════
+              // COIN INSIGHT CARD
+              // ═══════════════════════════════════════
+              _buildCard(child: const _CoinInsightSection()),
             ],
           ),
         ),
       ),
     );
   }
-}
 
-// ═══════════════════════════════════════════════════════════════════════════
-// DATA MODEL
-// ═══════════════════════════════════════════════════════════════════════════
-
-class _DayData {
-  final String day; // Full name: Mon, Tue, etc.
-  final String label; // Short: M, T, W, etc.
-  final int puzzle;
-  final int coin;
-
-  const _DayData({
-    required this.day,
-    required this.label,
-    required this.puzzle,
-    required this.coin,
-  });
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// MOOD HISTORY SECTION
-// ═══════════════════════════════════════════════════════════════════════════
-
-class _MoodHistorySection extends StatelessWidget {
-  const _MoodHistorySection();
-
-  static const _dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-  static const _moods = ['😊', '😊', '😐', '😊', '😔', '😊', '😊'];
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Mood History',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF1F2937),
+  Widget _buildCard({required Widget child}) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
-        ),
-        const SizedBox(height: 16),
-        // Day labels + mood emojis row
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: List.generate(7, (index) {
-            return _MoodDayItem(
-              dayLabel: _dayLabels[index],
-              emoji: _moods[index],
-            );
-          }),
-        ),
-
-        const SizedBox(height: 12),
-
-        // Horizontal divider line
-        Container(
-          height: 1,
-          color: const Color(0xFFF3F4F6),
-        ),
-      ],
+          BoxShadow(
+            color: const Color(0xFF7C3AED).withValues(alpha: 0.02),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+        border: Border.all(color: const Color(0xFFF3F4F6), width: 1.5),
+      ),
+      child: child,
     );
   }
 }
 
-class _MoodDayItem extends StatelessWidget {
-  final String dayLabel;
-  final String emoji;
+// ═══════════════════════════════════════════════════════════════════════════
+// MOOD PILL WIDGET
+// ═══════════════════════════════════════════════════════════════════════════
 
-  const _MoodDayItem({
-    required this.dayLabel,
-    required this.emoji,
+class _MoodPill extends StatelessWidget {
+  final String day;
+  final bool isYellow;
+  final String mood;
+
+  const _MoodPill({
+    required this.day,
+    required this.isYellow,
+    required this.mood,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          dayLabel,
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF6B7280),
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: const Color(0xFFF3E8FF),
-            border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.35),
-              width: 1.5,
+    return Container(
+      width: 40,
+      height: 80,
+      decoration: BoxDecoration(
+        color: isYellow ? const Color(0xFFFFF5D1) : const Color(0xFFFFE4F2),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: Text(
+              day,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1F2937),
+              ),
             ),
           ),
-          child: ClipOval(
-            child: CustomPaint(
-              size: const Size(40, 40),
-              painter: _MiniMascotPainter(mood: emoji),
+          Container(
+            width: 40,
+            height: 40,
+            decoration: const BoxDecoration(
+              color: Color(0xFFD1C4E9), // Light purple bg for face
+              shape: BoxShape.circle,
+            ),
+            child: ClipOval(
+              child: CustomPaint(
+                size: const Size(40, 40),
+                painter: _MiniMascotPainter(mood: mood),
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -175,77 +177,132 @@ class _MiniMascotPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final cx = size.width / 2;
     final cy = size.height / 2;
-    final s = size.width / 40;
+    final s = size.width / 40; // Scale based on 40x40 area
 
-    // Purple round body
-    canvas.drawCircle(
-      Offset(cx, cy + 2 * s),
-      14 * s,
-      Paint()..color = const Color(0xFFB39DDB),
-    );
+    // Move face slightly down
+    final faceCy = cy + 2 * s;
 
-    // White face area
+    // White face area (no body, just the face visor like in KawaiiFacePainter)
     canvas.drawOval(
       Rect.fromCenter(
-        center: Offset(cx, cy + 4 * s),
-        width: 18 * s,
-        height: 14 * s,
+        center: Offset(cx, faceCy + 2 * s),
+        width: 30 * s,
+        height: 22 * s,
       ),
       Paint()..color = const Color(0xFFFFF8F0),
     );
 
     // Eyes
     const eyeColor = Color(0xFF2D1B4E);
-    final eyeY = cy + 3 * s;
-    if (mood == '\u{1F614}') {
+    final eyeY = faceCy + 1 * s;
+    if (mood == '😔') {
       // Sad eyes
       canvas.drawLine(
-        Offset(cx - 5 * s, eyeY - 1 * s), Offset(cx - 3 * s, eyeY + 1 * s),
-        Paint()..color = eyeColor..strokeWidth = 1.5 * s..strokeCap = StrokeCap.round,
+        Offset(cx - 7 * s, eyeY - 1 * s),
+        Offset(cx - 4 * s, eyeY + 2 * s),
+        Paint()
+          ..color = eyeColor
+          ..strokeWidth = 2.5 * s
+          ..strokeCap = StrokeCap.round,
       );
       canvas.drawLine(
-        Offset(cx + 5 * s, eyeY - 1 * s), Offset(cx + 3 * s, eyeY + 1 * s),
-        Paint()..color = eyeColor..strokeWidth = 1.5 * s..strokeCap = StrokeCap.round,
+        Offset(cx + 7 * s, eyeY - 1 * s),
+        Offset(cx + 4 * s, eyeY + 2 * s),
+        Paint()
+          ..color = eyeColor
+          ..strokeWidth = 2.5 * s
+          ..strokeCap = StrokeCap.round,
       );
     } else {
-      canvas.drawCircle(Offset(cx - 4 * s, eyeY), 1.8 * s, Paint()..color = eyeColor);
-      canvas.drawCircle(Offset(cx + 4 * s, eyeY), 1.8 * s, Paint()..color = eyeColor);
-      canvas.drawCircle(Offset(cx - 3.2 * s, eyeY - 0.8 * s), 0.6 * s, Paint()..color = Colors.white);
-      canvas.drawCircle(Offset(cx + 4.8 * s, eyeY - 0.8 * s), 0.6 * s, Paint()..color = Colors.white);
+      // Normal open eyes
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(cx - 6 * s, eyeY),
+          width: 4.5 * s,
+          height: 5.5 * s,
+        ),
+        Paint()..color = eyeColor,
+      );
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: Offset(cx + 6 * s, eyeY),
+          width: 4.5 * s,
+          height: 5.5 * s,
+        ),
+        Paint()..color = eyeColor,
+      );
+      // Eye shines
+      canvas.drawCircle(
+        Offset(cx - 5.5 * s, eyeY - 1.5 * s),
+        1 * s,
+        Paint()..color = Colors.white,
+      );
+      canvas.drawCircle(
+        Offset(cx + 6.5 * s, eyeY - 1.5 * s),
+        1 * s,
+        Paint()..color = Colors.white,
+      );
     }
 
     // Mouth
-    final mouthY = cy + 7 * s;
-    if (mood == '\u{1F60A}') {
+    final mouthY = faceCy + 7 * s;
+    if (mood == '😊') {
       final p = Path()
-        ..moveTo(cx - 3 * s, mouthY - 1 * s)
-        ..quadraticBezierTo(cx, mouthY + 3 * s, cx + 3 * s, mouthY - 1 * s)
-        ..quadraticBezierTo(cx, mouthY + 1.5 * s, cx - 3 * s, mouthY - 1 * s);
+        ..moveTo(cx - 5 * s, mouthY - 1 * s)
+        ..quadraticBezierTo(cx, mouthY + 4 * s, cx + 5 * s, mouthY - 1 * s)
+        ..quadraticBezierTo(cx, mouthY + 2 * s, cx - 5 * s, mouthY - 1 * s);
       canvas.drawPath(p, Paint()..color = const Color(0xFF4A148C));
       canvas.save();
       canvas.clipPath(p);
-      canvas.drawCircle(Offset(cx, mouthY + 2 * s), 1.5 * s, Paint()..color = const Color(0xFFE57373));
+      canvas.drawCircle(
+        Offset(cx, mouthY + 3 * s),
+        2.5 * s,
+        Paint()..color = const Color(0xFFE57373),
+      );
       canvas.restore();
-    } else if (mood == '\u{1F614}') {
+    } else if (mood == '😔') {
       final p = Path()
-        ..moveTo(cx - 3 * s, mouthY + 1 * s)
-        ..quadraticBezierTo(cx, mouthY - 2 * s, cx + 3 * s, mouthY + 1 * s);
-      canvas.drawPath(p, Paint()..color = const Color(0xFF4A148C)..strokeWidth = 1.2 * s..style = PaintingStyle.stroke..strokeCap = StrokeCap.round);
+        ..moveTo(cx - 4 * s, mouthY + 2 * s)
+        ..quadraticBezierTo(cx, mouthY - 2 * s, cx + 4 * s, mouthY + 2 * s);
+      canvas.drawPath(
+        p,
+        Paint()
+          ..color = const Color(0xFF4A148C)
+          ..strokeWidth = 2 * s
+          ..style = PaintingStyle.stroke
+          ..strokeCap = StrokeCap.round,
+      );
     } else {
+      // Neutral
       canvas.drawLine(
-        Offset(cx - 2.5 * s, mouthY), Offset(cx + 2.5 * s, mouthY),
-        Paint()..color = const Color(0xFF4A148C)..strokeWidth = 1.2 * s..strokeCap = StrokeCap.round,
+        Offset(cx - 4 * s, mouthY),
+        Offset(cx + 4 * s, mouthY),
+        Paint()
+          ..color = const Color(0xFF4A148C)
+          ..strokeWidth = 2 * s
+          ..strokeCap = StrokeCap.round,
       );
     }
 
     // Cheeks
-    final cheekPaint = Paint()..color = const Color(0xFFF8BBD0).withValues(alpha: 0.6);
-    canvas.drawCircle(Offset(cx - 7 * s, cy + 5.5 * s), 2 * s, cheekPaint);
-    canvas.drawCircle(Offset(cx + 7 * s, cy + 5.5 * s), 2 * s, cheekPaint);
-
-    // Small ear bumps
-    canvas.drawCircle(Offset(cx - 8 * s, cy - 6 * s), 3.5 * s, Paint()..color = const Color(0xFFB39DDB));
-    canvas.drawCircle(Offset(cx + 8 * s, cy - 6 * s), 3.5 * s, Paint()..color = const Color(0xFFB39DDB));
+    final cheekPaint = Paint()
+      ..color = const Color(0xFFF8BBD0).withValues(alpha: 0.7);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(cx - 10 * s, faceCy + 4 * s),
+        width: 5 * s,
+        height: 3.5 * s,
+      ),
+      cheekPaint,
+    );
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(cx + 10 * s, faceCy + 4 * s),
+        width: 5 * s,
+        height: 3.5 * s,
+      ),
+      cheekPaint,
+    );
   }
 
   @override
@@ -253,45 +310,28 @@ class _MiniMascotPainter extends CustomPainter {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// BAR CHART SECTION (Puzzle Completed + Coin)
+// BAR CHART WIDGETS
 // ═══════════════════════════════════════════════════════════════════════════
 
 class _BarChartSection extends StatelessWidget {
   const _BarChartSection();
-
-  static const _data = [
-    _DayData(day: 'Mon', label: 'M', puzzle: 6, coin: 3),
-    _DayData(day: 'Tue', label: 'T', puzzle: 6, coin: 4),
-    _DayData(day: 'Wed', label: 'W', puzzle: 4, coin: 2),
-    _DayData(day: 'Thu', label: 'T', puzzle: 6, coin: 3),
-    _DayData(day: 'Fri', label: 'F', puzzle: 5, coin: 3),
-    _DayData(day: 'Sat', label: 'S', puzzle: 6, coin: 4),
-    _DayData(day: 'Sun', label: 'S', puzzle: 4, coin: 2),
-  ];
-
-  static const double _maxValue = 6;
-  static const double _barMaxHeight = 120;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ── Legend ──
+        // Legend
         Row(
           children: [
-            Icon(
-              Icons.extension_rounded,
-              size: 18,
-              color: AppColors.primary,
-            ),
+            const Icon(Icons.extension, size: 16, color: Color(0xFF7C3AED)),
             const SizedBox(width: 6),
             const Text(
               'Puzzle Completed',
               style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF374151),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF4B5563),
               ),
             ),
             const SizedBox(width: 16),
@@ -300,36 +340,40 @@ class _BarChartSection extends StatelessWidget {
               height: 14,
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
-                color: Color(0xFFFBBF24),
+                color: Color(0xFFFACC15),
+              ),
+              child: const Center(
+                child: Icon(Icons.star, size: 8, color: Colors.white),
               ),
             ),
             const SizedBox(width: 6),
             const Text(
               'Coin',
               style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF374151),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF4B5563),
               ),
             ),
           ],
         ),
-
-        const SizedBox(height: 20),
-
-        // ── Bar chart ──
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: _data.map((d) {
-            return _BarGroup(
-              day: d.day,
-              puzzle: d.puzzle,
-              coin: d.coin,
-              maxValue: _maxValue,
-              maxHeight: _barMaxHeight,
-            );
-          }).toList(),
+        const SizedBox(height: 24),
+        // Chart
+        SizedBox(
+          height: 160,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: const [
+              _BarGroup(day: 'Mon', puzzle: 6, coin: 15),
+              _BarGroup(day: 'Tue', puzzle: 6, coin: 25),
+              _BarGroup(day: 'Wed', puzzle: 4, coin: 20),
+              _BarGroup(day: 'Thu', puzzle: 6, coin: 25),
+              _BarGroup(day: 'Fri', puzzle: 5, coin: 10),
+              _BarGroup(day: 'Sat', puzzle: 6, coin: 15),
+              _BarGroup(day: 'Sun', puzzle: 4, coin: 10),
+            ],
+          ),
         ),
       ],
     );
@@ -340,62 +384,90 @@ class _BarGroup extends StatelessWidget {
   final String day;
   final int puzzle;
   final int coin;
-  final double maxValue;
-  final double maxHeight;
 
   const _BarGroup({
     required this.day,
     required this.puzzle,
     required this.coin,
-    required this.maxValue,
-    required this.maxHeight,
   });
 
   @override
   Widget build(BuildContext context) {
-    final puzzleHeight = (puzzle / maxValue) * maxHeight;
-    final coinHeight = (coin / maxValue) * maxHeight;
+    // Scales to map the values to physical heights
+    const maxPuzzle = 6.0;
+    const maxCoin = 30.0;
+    const maxHeight = 100.0;
+
+    final puzzleHeight = (puzzle / maxPuzzle) * maxHeight;
+    final coinHeight = (coin / maxCoin) * maxHeight;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        // Value on top
-        Text(
-          puzzle.toString(),
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF6B7280),
+        // Numbers and Bars
+        SizedBox(
+          height: maxHeight + 24, // accommodate text on top
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              // Coin Bar (Yellow)
+              Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    coin.toString(),
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF9CA3AF),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Container(
+                    width: 8,
+                    height: coinHeight,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFACC15),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 4),
+              // Puzzle Bar (Purple)
+              Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    puzzle.toString(),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF4B5563),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Container(
+                    width: 8,
+                    height: puzzleHeight,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF7C3AED),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 4),
-        // Bars side by side
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            // Puzzle bar (purple)
-            _SingleBar(
-              height: puzzleHeight,
-              color: AppColors.primary.withValues(alpha: 0.6),
-              width: 14,
-            ),
-            const SizedBox(width: 3),
-            // Coin bar (yellow)
-            _SingleBar(
-              height: coinHeight,
-              color: const Color(0xFFFBBF24),
-              width: 14,
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        // Day label
+        const SizedBox(height: 10),
+        // Day Label
         Text(
           day,
           style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF6B7280),
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF1F2937),
           ),
         ),
       ],
@@ -403,26 +475,182 @@ class _BarGroup extends StatelessWidget {
   }
 }
 
-class _SingleBar extends StatelessWidget {
-  final double height;
-  final Color color;
-  final double width;
+// ═══════════════════════════════════════════════════════════════════════════
+// COIN INSIGHT SECTION
+// ═══════════════════════════════════════════════════════════════════════════
 
-  const _SingleBar({
-    required this.height,
-    required this.color,
-    required this.width,
-  });
+class _CoinInsightSection extends StatelessWidget {
+  const _CoinInsightSection();
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(4),
-      ),
+    return Consumer<AppProvider>(
+      builder: (context, appProvider, child) {
+        final totalCoins = appProvider.user.coins;
+        final earnedCoins = appProvider.user.earnedCoins;
+        final spentCoins = appProvider.user.spentCoins;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Coin insight',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1F2937),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                // Left Card (Total coin)
+                Expanded(
+                  flex: 5,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 16,
+                      horizontal: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF9FAFB),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      children: [
+                        const Text(
+                          'Total coin',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF9CA3AF),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFFACC15),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.star,
+                                  size: 20,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              totalCoins.toString(),
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w800,
+                                color: Color(0xFF1F2937),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          '+80 from last week',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: Color(
+                              0xFFA78BFA,
+                            ), // light purple matching design
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // Right Card (Earned/Spent)
+                Expanded(
+                  flex: 6,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 16,
+                      horizontal: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF9FAFB),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            Column(
+                              children: [
+                                const Text(
+                                  'Earned',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF4B5563),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '+$earnedCoins',
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w800,
+                                    color: Color(0xFF10B981), // Green
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Column(
+                              children: [
+                                const Text(
+                                  'Spent',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF4B5563),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '−$spentCoins',
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w800,
+                                    color: Color(0xFFEF4444), // Red
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'Manage your coins wisely',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF7C3AED), // Dark purple
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
     );
   }
 }
