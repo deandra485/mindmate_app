@@ -48,17 +48,26 @@ class InsightsScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: const [
-                        _MoodPill(day: 'M', isYellow: false, mood: '😊'),
-                        _MoodPill(day: 'T', isYellow: true, mood: '😊'),
-                        _MoodPill(day: 'W', isYellow: false, mood: '😐'),
-                        _MoodPill(day: 'T', isYellow: false, mood: '😊'),
-                        _MoodPill(day: 'F', isYellow: true, mood: '😔'),
-                        _MoodPill(day: 'S', isYellow: true, mood: '😊'),
-                        _MoodPill(day: 'S', isYellow: false, mood: '😊'),
-                      ],
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Row(
+                        children: const [
+                          _MoodPill(day: 'M', isYellow: false, mood: '😊'),
+                          SizedBox(width: 6),
+                          _MoodPill(day: 'T', isYellow: true, mood: '😊'),
+                          SizedBox(width: 6),
+                          _MoodPill(day: 'W', isYellow: false, mood: '😐'),
+                          SizedBox(width: 6),
+                          _MoodPill(day: 'T', isYellow: false, mood: '😊'),
+                          SizedBox(width: 6),
+                          _MoodPill(day: 'F', isYellow: true, mood: '😔'),
+                          SizedBox(width: 6),
+                          _MoodPill(day: 'S', isYellow: true, mood: '😊'),
+                          SizedBox(width: 6),
+                          _MoodPill(day: 'S', isYellow: false, mood: '😊'),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -318,64 +327,81 @@ class _BarChartSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Legend
-        Row(
+    return Consumer<AppProvider>(
+      builder: (context, provider, _) {
+        final data = provider.weeklyBarData;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(Icons.extension, size: 16, color: Color(0xFF7C3AED)),
-            const SizedBox(width: 6),
-            const Text(
-              'Puzzle Completed',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF4B5563),
-              ),
+            // Legend
+            Row(
+              children: [
+                const Icon(Icons.extension, size: 16, color: Color(0xFF7C3AED)),
+                const SizedBox(width: 6),
+                const Text(
+                  'Task Completed',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF4B5563),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Container(
+                  width: 14,
+                  height: 14,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0xFFFACC15),
+                  ),
+                  child: const Center(
+                    child: Icon(Icons.star, size: 8, color: Colors.white),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                const Text(
+                  'Coin',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF4B5563),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 16),
-            Container(
-              width: 14,
-              height: 14,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: Color(0xFFFACC15),
-              ),
-              child: const Center(
-                child: Icon(Icons.star, size: 8, color: Colors.white),
-              ),
-            ),
-            const SizedBox(width: 6),
-            const Text(
-              'Coin',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF4B5563),
+            const SizedBox(height: 24),
+            // Chart
+            SizedBox(
+              height: 160,
+              child: Builder(
+                builder: (context) {
+                  final maxTasks = data.isEmpty ? 6 : data.map((e) => e['tasks'] as int).reduce((a, b) => a > b ? a : b);
+                  final maxCoins = data.isEmpty ? 30 : data.map((e) => e['coins'] as int).reduce((a, b) => a > b ? a : b);
+                  
+                  // Provide a minimum base scale so small numbers don't fill the whole screen
+                  final scaleTasks = maxTasks < 6 ? 6.0 : maxTasks.toDouble();
+                  final scaleCoins = maxCoins < 30 ? 30.0 : maxCoins.toDouble();
+
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      for (final entry in data)
+                        _BarGroup(
+                          day: entry['day'] as String,
+                          puzzle: entry['tasks'] as int,
+                          coin: entry['coins'] as int,
+                          maxPuzzleScale: scaleTasks,
+                          maxCoinScale: scaleCoins,
+                        ),
+                    ],
+                  );
+                },
               ),
             ),
           ],
-        ),
-        const SizedBox(height: 24),
-        // Chart
-        SizedBox(
-          height: 160,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: const [
-              _BarGroup(day: 'Mon', puzzle: 6, coin: 15),
-              _BarGroup(day: 'Tue', puzzle: 6, coin: 25),
-              _BarGroup(day: 'Wed', puzzle: 4, coin: 20),
-              _BarGroup(day: 'Thu', puzzle: 6, coin: 25),
-              _BarGroup(day: 'Fri', puzzle: 5, coin: 10),
-              _BarGroup(day: 'Sat', puzzle: 6, coin: 15),
-              _BarGroup(day: 'Sun', puzzle: 4, coin: 10),
-            ],
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 }
@@ -384,22 +410,27 @@ class _BarGroup extends StatelessWidget {
   final String day;
   final int puzzle;
   final int coin;
+  final double maxPuzzleScale;
+  final double maxCoinScale;
 
   const _BarGroup({
     required this.day,
     required this.puzzle,
     required this.coin,
+    this.maxPuzzleScale = 6.0,
+    this.maxCoinScale = 30.0,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Scales to map the values to physical heights
-    const maxPuzzle = 6.0;
-    const maxCoin = 30.0;
     const maxHeight = 100.0;
 
-    final puzzleHeight = (puzzle / maxPuzzle) * maxHeight;
-    final coinHeight = (coin / maxCoin) * maxHeight;
+    double puzzleHeight = puzzle == 0 ? 4.0 : (puzzle / maxPuzzleScale) * maxHeight;
+    double coinHeight = coin == 0 ? 4.0 : (coin / maxCoinScale) * maxHeight;
+    
+    // Safety clamp to ensure it absolutely never overflows
+    if (puzzleHeight > maxHeight) puzzleHeight = maxHeight;
+    if (coinHeight > maxHeight) coinHeight = maxHeight;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -414,44 +445,50 @@ class _BarGroup extends StatelessWidget {
               Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Text(
-                    coin.toString(),
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF9CA3AF),
+                  if (coin > 0)
+                    Text(
+                      coin.toString(),
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF9CA3AF),
+                      ),
                     ),
-                  ),
                   const SizedBox(height: 4),
                   Container(
                     width: 8,
                     height: coinHeight,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFACC15),
+                      color: coin == 0
+                          ? const Color(0xFFFACC15).withValues(alpha: 0.3)
+                          : const Color(0xFFFACC15),
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),
                 ],
               ),
               const SizedBox(width: 4),
-              // Puzzle Bar (Purple)
+              // Task Bar (Purple)
               Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Text(
-                    puzzle.toString(),
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF4B5563),
+                  if (puzzle > 0)
+                    Text(
+                      puzzle.toString(),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF4B5563),
+                      ),
                     ),
-                  ),
                   const SizedBox(height: 4),
                   Container(
                     width: 8,
                     height: puzzleHeight,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF7C3AED),
+                      color: puzzle == 0
+                          ? const Color(0xFF7C3AED).withValues(alpha: 0.3)
+                          : const Color(0xFF7C3AED),
                       borderRadius: BorderRadius.circular(4),
                     ),
                   ),

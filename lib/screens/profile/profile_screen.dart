@@ -79,17 +79,28 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              _MenuItem(
-                label: 'Activity History',
-                onTap: () {},
-              ),
-              _MenuItem(
-                label: 'Progress Insights',
-                onTap: () {},
-              ),
-              _MenuItem(
-                label: 'Reset Progress',
-                onTap: () {},
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 20),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF9FAFB),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  children: [
+                    _MenuItem(
+                      label: 'Puzzle Collect',
+                      onTap: () => Navigator.pushNamed(context, '/puzzle-collection'),
+                    ),
+                    _MenuItem(
+                      label: 'Coins Detail',
+                      onTap: () => Navigator.pushNamed(context, '/coin-detail'),
+                    ),
+                    _MenuItem(
+                      label: 'Trash',
+                      onTap: () => Navigator.pushNamed(context, '/trash'),
+                    ),
+                  ],
+                ),
               ),
 
               const SizedBox(height: 28),
@@ -161,8 +172,19 @@ class _ProfileCard extends StatelessWidget {
             ),
           ],
         ),
-        child: Column(
+        child: Stack(
           children: [
+            Positioned(
+              right: -20,
+              top: 50,
+              child: Icon(
+                Icons.extension,
+                size: 200,
+                color: const Color(0xFF7C3AED).withValues(alpha: 0.04),
+              ),
+            ),
+            Column(
+              children: [
             // ── Purple banner with "PROFILE" label ──
             Container(
               width: double.infinity,
@@ -178,16 +200,35 @@ class _ProfileCard extends StatelessWidget {
                   top: Radius.circular(20),
                 ),
               ),
-              child: const Center(
-                child: Text(
-                  'PROFILE',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 2,
-                    color: Colors.white,
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Divider(
+                      color: Colors.white54,
+                      thickness: 1,
+                      endIndent: 12,
+                      indent: 80,
+                    ),
                   ),
-                ),
+                  Text(
+                    'PROFILE',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 2,
+                      color: Colors.white,
+                    ),
+                  ),
+                  Expanded(
+                    child: Divider(
+                      color: Colors.white54,
+                      thickness: 1,
+                      indent: 12,
+                      endIndent: 80,
+                    ),
+                  ),
+                ],
               ),
             ),
 
@@ -300,30 +341,25 @@ class _ProfileCard extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
-                      color: Color(0xFFEF4444),
+                      color: Color(0xFF9CA3AF),
                     ),
                   ),
-                  // Decorative dots
-                  Row(
-                    children: List.generate(8, (i) {
-                      return Container(
-                        width: 4,
-                        height: 4,
-                        margin: const EdgeInsets.only(left: 3),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: const Color(0xFFD1D5DB).withValues(
-                            alpha: 0.5 + (i * 0.06),
-                          ),
-                        ),
-                      );
-                    }),
+                  const Text(
+                    '<<<<<<<<<<',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFFD1D5DB),
+                      letterSpacing: 1.5,
+                    ),
                   ),
                 ],
               ),
             ),
           ],
         ),
+      ],
+    ),
       ),
     );
   }
@@ -379,7 +415,7 @@ class _MenuItem extends StatelessWidget {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Row(
           children: [
             Expanded(

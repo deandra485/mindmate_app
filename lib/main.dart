@@ -21,6 +21,9 @@ import 'package:application_belajar/screens/profile/change_password_screen.dart'
 import 'package:application_belajar/screens/profile/change_email_screen.dart';
 import 'package:application_belajar/screens/settings/app_version_screen.dart';
 import 'package:application_belajar/screens/settings/privacy_policy_screen.dart';
+import 'package:application_belajar/screens/profile/puzzle_collection_screen.dart';
+import 'package:application_belajar/screens/profile/coin_detail_screen.dart';
+import 'package:application_belajar/screens/profile/trash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -60,6 +63,9 @@ class MyApp extends StatelessWidget {
             '/change-email': (_) => const ChangeEmailScreen(),
             '/app-version': (_) => const AppVersionScreen(),
             '/privacy-policy': (_) => const PrivacyPolicyScreen(),
+            '/puzzle-collection': (_) => const PuzzleCollectionScreen(),
+            '/coin-detail': (_) => const CoinDetailScreen(),
+            '/trash': (_) => const TrashScreen(),
           },
         ),
       ),
